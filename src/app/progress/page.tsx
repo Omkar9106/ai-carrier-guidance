@@ -339,7 +339,7 @@ export default function ProgressPage() {
                   <div className="ml-3">
                     <h3 className="text-lg font-semibold text-yellow-800">Perfect Score Champion!</h3>
                     <p className="text-yellow-700">
-                      You've achieved a perfect score in {perfectScores} {perfectScores === 1 ? 'quiz' : 'quizzes'}! Keep up the great work!
+                      You&apos;ve achieved a perfect score in {perfectScores} {perfectScores === 1 ? 'quiz' : 'quizzes'}! Keep up the great work!
                     </p>
                   </div>
                 </div>
