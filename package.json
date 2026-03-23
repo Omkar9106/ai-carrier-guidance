@@ -27,7 +27,7 @@
     "framer-motion": "^12.23.15",
     "mammoth": "^1.10.0",
     "mime": "^4.0.7",
-    "next": "^15.5.3",
+    "next": "^16.2.1",
     "next-auth": "^4.24.11",
     "node-fetch": "^3.3.2",
     "prisma": "^6.19.2",
