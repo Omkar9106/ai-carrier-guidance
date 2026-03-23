@@ -142,75 +142,145 @@ export default function Header({ activeTab, onTabChange, onOpenQuiz, onOpenChat 
       </div>
       
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-white/5">
-          <div className="px-4 py-3 flex flex-wrap gap-3 text-sm">
-            <Link 
-              href="/"
-              onClick={() => {
-                onTabChange('home');
-                setIsMobileMenuOpen(false);
-              }} 
-              className={`px-3 py-1.5 rounded-md ${activeTab === 'home' ? 'bg-blue-500 text-white' : 'bg-white/5'}`}
-            >
-              Home
-            </Link>
-            <Link 
-              href="/news"
-              onClick={() => {
-                onTabChange('news');
-                setIsMobileMenuOpen(false);
-              }} 
-              className={`px-3 py-1.5 rounded-md ${activeTab === 'news' ? 'bg-blue-500 text-white' : 'bg-white/5'}`}
-            >
-              News
-            </Link>
-            <Link 
-              href="/skills"
-              onClick={() => {
-                onTabChange('skills');
-                setIsMobileMenuOpen(false);
-              }} 
-              className={`px-3 py-1.5 rounded-md ${activeTab === 'skills' ? 'bg-blue-500 text-white' : 'bg-white/5'}`}
-            >
-              Skills Gap
-            </Link>
-            <Link 
-              href="/courses"
-              onClick={() => {
-                onTabChange('courses');
-                setIsMobileMenuOpen(false);
-              }} 
-              className={`px-3 py-1.5 rounded-md ${activeTab === 'courses' ? 'bg-blue-500 text-white' : 'bg-white/5'}`}
-            >
-              Jobs & Courses
-            </Link>
-            <Link 
-              href="/recommendations"
-              onClick={() => {
-                onTabChange('recommendations');
-                setIsMobileMenuOpen(false);
-              }} 
-              className={`px-3 py-1.5 rounded-md ${activeTab === 'recommendations' ? 'bg-blue-500 text-white' : 'bg-white/5'}`}
-            >
-              Recommendations
-            </Link>
-            <Link 
-              href="/progress"
-              onClick={() => {
-                onTabChange('progress');
-                setIsMobileMenuOpen(false);
-              }} 
-              className={`px-3 py-1.5 rounded-md ${activeTab === 'progress' ? 'bg-blue-500 text-white' : 'bg-white/5'}`}
-            >
-              Progress
-            </Link>
-            <Link 
-              href="/profile"
-              className="px-3 py-1.5 rounded-md bg-white/5 hover:bg-white/10 text-white text-sm font-medium transition-colors"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Profile
-            </Link>
+        <div className="md:hidden border-t border-white/5 bg-slate-900/95 backdrop-blur">
+          <div className="px-4 py-4 space-y-2">
+            {/* Navigation Links */}
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <Link 
+                href="/Home"
+                onClick={() => {
+                  onTabChange('home');
+                  setIsMobileMenuOpen(false);
+                }} 
+                className={`px-3 py-2 rounded-md text-center transition-colors ${
+                  activeTab === 'home' 
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-white/5 hover:bg-white/10 text-white'
+                }`}
+              >
+                Home
+              </Link>
+              <Link 
+                href="/news"
+                onClick={() => {
+                  onTabChange('news');
+                  setIsMobileMenuOpen(false);
+                }} 
+                className={`px-3 py-2 rounded-md text-center transition-colors ${
+                  activeTab === 'news' 
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-white/5 hover:bg-white/10 text-white'
+                }`}
+              >
+                News
+              </Link>
+              <Link 
+                href="/skills"
+                onClick={() => {
+                  onTabChange('skills');
+                  setIsMobileMenuOpen(false);
+                }} 
+                className={`px-3 py-2 rounded-md text-center transition-colors ${
+                  activeTab === 'skills' 
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-white/5 hover:bg-white/10 text-white'
+                }`}
+              >
+                Skills Gap
+              </Link>
+              <Link 
+                href="/jobs"
+                onClick={() => {
+                  onTabChange('courses');
+                  setIsMobileMenuOpen(false);
+                }} 
+                className={`px-3 py-2 rounded-md text-center transition-colors ${
+                  activeTab === 'courses' 
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-white/5 hover:bg-white/10 text-white'
+                }`}
+              >
+                Jobs & Courses
+              </Link>
+              <Link 
+                href="/progress"
+                onClick={() => {
+                  onTabChange('progress');
+                  setIsMobileMenuOpen(false);
+                }} 
+                className={`px-3 py-2 rounded-md text-center transition-colors ${
+                  activeTab === 'progress' 
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-white/5 hover:bg-white/10 text-white'
+                }`}
+              >
+                Progress
+              </Link>
+              <Link 
+                href="/about"
+                onClick={() => {
+                  onTabChange('about');
+                  setIsMobileMenuOpen(false);
+                }} 
+                className={`px-3 py-2 rounded-md text-center transition-colors ${
+                  activeTab === 'about' 
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-white/5 hover:bg-white/10 text-white'
+                }`}
+              >
+                About
+              </Link>
+              <Link 
+                href="/ats"
+                onClick={() => {
+                  onTabChange('ats');
+                  setIsMobileMenuOpen(false);
+                }} 
+                className={`px-3 py-2 rounded-md text-center transition-colors ${
+                  activeTab === 'ats' 
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-white/5 hover:bg-white/10 text-white'
+                }`}
+              >
+                ATS
+              </Link>
+              <Link 
+                href="/profile"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="px-3 py-2 rounded-md text-center bg-white/5 hover:bg-white/10 text-white transition-colors"
+              >
+                Profile
+              </Link>
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="pt-3 border-t border-white/10 space-y-2">
+              <button 
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsChatOpen(true);
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white text-sm font-medium transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6l-2 2V6h16v10z"/>
+                </svg>
+                AI Assistant
+              </button>
+              <button 
+                onClick={() => {
+                  setIsQuizOpen(true);
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-blue-500/90 hover:bg-blue-500 text-white text-sm font-medium shadow transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 15h-2v-2h2v2zm1.07-7.75l-.9.92c-.5.5-.86.86-.86 1.83h-2v-.5c0-.83.36-1.58.93-2.15l1.24-1.26A1.5 1.5 0 0012 6a1.5 1.5 0 00-1.5 1.5H8A4 4 0 0112 4a4 4 0 012.83 6.83z"/>
+                </svg>
+                Take Assessment
+              </button>
+            </div>
           </div>
         </div>
       )}
