@@ -34,11 +34,11 @@ export default function Header({ activeTab, onTabChange, onOpenQuiz, onOpenChat 
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <Image 
-                src="/globe.svg" 
-                alt="Logo" 
-                width={24} 
-                height={24} 
-                className="h-6 w-6"
+                src="/logo.svg" 
+                alt="AI Career Guide Logo" 
+                width={20} 
+                height={20} 
+                className="h-5 w-5"
               />
               <span className="text-lg font-semibold">AI Career Guide</span>
             </div>

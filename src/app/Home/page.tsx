@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { FiAward, FiBarChart2, FiCode, FiPlay, FiSearch, FiTarget, FiZap, FiCheck, FiArrowRight } from 'react-icons/fi';
 import dynamic from 'next/dynamic';
 
@@ -60,10 +61,29 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 pt-24 pb-20">
         <div className="absolute inset-0 opacity-20">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNwYXR0ZXJuKSIvPjwvc3ZnPg==')]"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-purple-900/20 to-slate-900/20"></div>
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center">
+            {/* Logo Section */}
+            <div className="flex justify-center mb-8">
+              <div className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20">
+                <div className="relative">
+                  <Image 
+                    src="/globe.svg" 
+                    alt="AI Career Guide Logo" 
+                    width={48} 
+                    height={48} 
+                    className="h-12 w-12"
+                  />
+                  <div className="ml-3">
+                    <h2 className="text-2xl font-bold text-white">AI Career Guide</h2>
+                    <p className="text-blue-300 text-sm">Your Personal Career Development Assistant</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-500/10 text-blue-300 text-sm font-medium mb-6">
               <FiZap className="mr-2" />
               AI-Powered Career Guidance
