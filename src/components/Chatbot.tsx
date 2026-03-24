@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 
 export default function Chatbot({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [messages, setMessages] = useState<Array<{ text: string; isUser: boolean }>>([
-    { text: "Hello! I'm your AI assistant. How can I help you today?", isUser: false }
+    { text: "Hello! I&apos;m your AI assistant. How can I help you today?", isUser: false }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -58,7 +58,7 @@ export default function Chatbot({ isOpen, onClose }: { isOpen: boolean; onClose:
       }
       
       setMessages(prev => [...prev, { 
-        text: data.reply || "I'm not sure how to respond to that.", 
+        text: data.reply || "I&apos;m not sure how to respond to that.", 
         isUser: false 
       }]);
     } catch (error) {
@@ -69,11 +69,11 @@ export default function Chatbot({ isOpen, onClose }: { isOpen: boolean; onClose:
         stack: error instanceof Error ? error.stack : undefined
       });
       
-      let errorMessage = "I'm having trouble connecting to the AI service. ";
+      let errorMessage = "I&apos;m having trouble connecting to the AI service. ";
       
       if (error instanceof Error) {
         if (error.message.includes('429') || error.message.includes('quota')) {
-          errorMessage = "I've reached my usage limit for now. Please try again later or use a different API key in the settings.";
+          errorMessage = "I&apos;ve reached my usage limit for now. Please try again later or use a different API key in the settings.";
         } else if (error.message.includes('Failed to fetch')) {
           errorMessage += "Please check your internet connection.";
         } else if (error.message.includes('API Error')) {

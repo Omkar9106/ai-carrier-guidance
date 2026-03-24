@@ -66,7 +66,7 @@ You are a professional AI Career Advisor called "SkillBot." You help users under
     }
 
     const data = await response.json();
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I couldn't process your request at the moment.";
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I&apos;m sorry, I couldn&apos;t process your request at the moment.";
 
     return NextResponse.json({ reply });
   } catch (error) {
