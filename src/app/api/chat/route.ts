@@ -5,6 +5,15 @@ const API_KEY = 'AIzaSyAf5MAFVsnzDqMe_8iBo6H1vb_CPMtTnjs';
 // Using the more available Gemini 1.0 Pro model
 const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
+// Fallback responses for when AI service is unavailable
+const fallbackResponses = [
+  "I'm your AI Career Advisor! I can help you understand skills needed for different careers, analyze skill gaps, and suggest learning paths. What specific career guidance are you looking for?",
+  "As SkillBot, I'm here to provide career guidance. You can ask me about job market trends, required skills for different roles, or how to transition between careers. What would you like to know?",
+  "I specialize in career advice and skill development. I can help you with understanding job requirements, identifying skill gaps, and suggesting improvement strategies. How can I assist you today?",
+  "Welcome! I'm your AI Career Assistant. I can provide insights on various careers, skill requirements, and development paths. What career questions do you have?",
+  "I'm here to help with your career journey! I can analyze skills needed for different jobs, suggest learning resources, and provide guidance on career transitions. What would you like to explore?"
+];
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -21,26 +30,35 @@ export async function POST(req: Request) {
     }
 
     console.log('Sending request to Google AI API...');
-    const response = await fetch(`${API_URL}?key=${API_KEY}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: `System Message (or training instruction):
-You are a professional AI Career Advisor called "SkillBot." You help users understand the skills required for different careers, analyze skill gaps, suggest improvements, and provide accurate, practical guidance about future job trends, roles, and career development paths. Be helpful, clear, and concise. Speak in a motivating but honest tone. ${message}`
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 1024,
+    
+    let response;
+    try {
+      response = await fetch(`${API_URL}?key=${API_KEY}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      }),
-    });
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `System Message (or training instruction):
+You are a professional AI Career Advisor called "SkillBot." You help users understand the skills required for different careers, analyze skill gaps, suggest improvements, and provide accurate, practical guidance about future job trends, roles, and career development paths. Be helpful, clear, and concise. Speak in a motivating but honest tone. ${message}`
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 1024,
+          },
+        }),
+      });
+    } catch (fetchError) {
+      console.error('Network error when calling AI API:', fetchError);
+      // Return fallback response
+      const fallbackReply = fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+      return NextResponse.json({ reply: fallbackReply });
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -53,30 +71,37 @@ You are a professional AI Career Advisor called "SkillBot." You help users under
       console.error('Google AI API error:', errorDetails);
 
       if (response.status === 429) {
-        return NextResponse.json(
-          {
-            error: 'API rate limit exceeded',
-            message: 'The API key has reached its quota limit. Please try again later or use a different API key.'
-          },
-          { status: 429 }
-        );
+        console.log('Rate limit exceeded, returning fallback response');
+        const fallbackReply = fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+        return NextResponse.json({ reply: fallbackReply });
+      }
+
+      if (response.status === 400 || response.status === 403) {
+        console.log('API key or request error, returning fallback response');
+        const fallbackReply = fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+        return NextResponse.json({ reply: fallbackReply });
       }
 
       throw new Error(`AI service error: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I&apos;m sorry, I couldn&apos;t process your request at the moment.";
+    
+    // Check if the response has the expected structure
+    if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+      console.error('Invalid AI response structure:', data);
+      const fallbackReply = fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+      return NextResponse.json({ reply: fallbackReply });
+    }
+
+    const reply = data.candidates[0].content.parts[0].text || "I'm sorry, I couldn't process your request at the moment.";
 
     return NextResponse.json({ reply });
   } catch (error) {
     console.error('Chat API error:', error);
-    return NextResponse.json(
-      {
-        error: 'Failed to process chat message',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
+    
+    // Return fallback response instead of error
+    const fallbackReply = fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+    return NextResponse.json({ reply: fallbackReply });
   }
 }

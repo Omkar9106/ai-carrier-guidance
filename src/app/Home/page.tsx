@@ -3,7 +3,18 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FiAward, FiBarChart2, FiCode, FiPlay, FiSearch, FiTarget, FiZap, FiCheck, FiArrowRight } from 'react-icons/fi';
+import { 
+  BarChart3, 
+  Target, 
+  Code, 
+  Play, 
+  Search, 
+  Zap, 
+  Check, 
+  ArrowRight,
+  Award,
+  TrendingUp
+} from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 // Dynamically import QuizModal with no SSR
@@ -28,22 +39,22 @@ export default function Home() {
 
   const features = [
     {
-      icon: <FiBarChart2 className="w-6 h-6 text-blue-400" />,
+      icon: <BarChart3 className="w-6 h-6 text-blue-400" />,
       title: 'Skill Gap Analysis',
       description: 'Identify the exact skills you need to reach your career goals with our AI-powered assessment.'
     },
     {
-      icon: <FiTarget className="w-6 h-6 text-purple-400" />,
+      icon: <Target className="w-6 h-6 text-purple-400" />,
       title: 'Personalized Roadmap',
       description: 'Get a customized learning path tailored to your current level and target role.'
     },
     {
-      icon: <FiCode className="w-6 h-6 text-green-400" />,
+      icon: <Code className="w-6 h-6 text-green-400" />,
       title: 'Real-world Projects',
       description: 'Build practical experience with projects that match your skill level and interests.'
     },
     {
-      icon: <FiAward className="w-6 h-6 text-yellow-400" />,
+      icon: <Award className="w-6 h-6 text-yellow-400" />,
       title: 'Certification Prep',
       description: 'Prepare for industry-recognized certifications with our targeted study plans.'
     }
@@ -85,7 +96,7 @@ export default function Home() {
             </div>
             
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-500/10 text-blue-300 text-sm font-medium mb-6">
-              <FiZap className="mr-2" />
+              <Zap className="mr-2" />
               AI-Powered Career Guidance
             </div>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-300">
@@ -108,7 +119,7 @@ export default function Home() {
                 href="/demo" 
                 className="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold rounded-lg transition-all transform hover:scale-105 flex items-center justify-center"
               >
-                <FiPlay className="mr-2" />
+                <Play className="mr-2" />
                 Watch Demo
               </Link>
             </div>

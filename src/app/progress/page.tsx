@@ -1,353 +1,572 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, PieLabelRenderProps } from 'recharts';
-import { FiAward, FiBarChart2, FiCheckCircle, FiCode, FiPlay, FiSearch, FiStar, FiTarget, FiZap } from 'react-icons/fi';
-import { useSession } from 'next-auth/react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Trophy, 
+  Target, 
+  TrendingUp, 
+  Award, 
+  Star, 
+  Zap, 
+  CheckCircle, 
+  BarChart3, 
+  PieChart, 
+  Clock,
+  BookOpen,
+  Flame,
+  Brain,
+  Rocket,
+  Crown
+} from 'lucide-react';
 
-interface Quiz {
-  id: string;
-  title: string;
-  category: string;
-  difficulty: string;
-}
-
-interface QuizResult {
-  id: string;
-  score: number;
-  total: number;
-  percentage: number;
-  completedAt: string;
-  answers: any;
-  quiz: Quiz;
-  userId: string;
-  quizId: string;
-}
-
-interface Badge {
+interface Achievement {
   id: number;
-  name: string;
+  title: string;
   description: string;
   icon: React.ReactNode;
-  earned: boolean;
+  progress: number;
+  maxProgress: number;
+  unlocked: boolean;
+  color: string;
+  glowColor: string;
 }
 
-interface ChartData {
-  id: string;
-  name: string;
-  score: number;
-  total: number;
-  date: string;
-  percentage: number;
+interface SkillProgress {
   category: string;
+  level: number;
+  experience: number;
+  maxExperience: number;
+  color: string;
+  icon: React.ReactNode;
 }
 
-// Helper function to format date
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-};
+interface RecentActivity {
+  id: number;
+  type: 'quiz' | 'course' | 'achievement';
+  title: string;
+  score?: number;
+  timestamp: string;
+  color: string;
+}
 
-const TABS = {
-  overview: 'overview',
-  achievements: 'achievements'
-} as const;
-
-type TabType = 'overview' | 'achievements';
-
-export default function ProgressPage() {
-  const { data: session } = useSession();
-  const [activeTab, setActiveTab] = useState<TabType>(TABS.overview);
-  const [quizData, setQuizData] = useState<QuizResult[]>([]);
+const ProgressPage = () => {
+  const [selectedTab, setSelectedTab] = useState<'overview' | 'achievements' | 'skills'>('overview');
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  
-  // Calculate derived state
-  const totalQuizzes = quizData.length;
-  const perfectScores = quizData.filter(q => q.percentage === 100).length;
-  const averageScore = totalQuizzes > 0 
-    ? (quizData.reduce((sum, quiz) => sum + quiz.percentage, 0) / totalQuizzes).toFixed(1)
-    : '0.0';
-  const uniqueCategories = new Set(quizData.map(q => q.quiz.category)).size;
-  
-  // Badges data that depends on state
-  const badges: Badge[] = [
-    { 
-      id: 1, 
-      name: 'Quick Learner', 
-      description: 'Complete your first quiz', 
-      icon: <FiZap className="w-6 h-6 text-yellow-400" />, 
-      earned: totalQuizzes > 0 
+  const [animatedStats, setAnimatedStats] = useState({
+    totalQuizzes: 0,
+    averageScore: 0,
+    streakDays: 0,
+    totalHours: 0
+  });
+
+  // Mock data - replace with actual API calls
+  const achievements: Achievement[] = [
+    {
+      id: 1,
+      title: "Quick Starter",
+      description: "Complete your first quiz",
+      icon: <Zap className="w-6 h-6" />,
+      progress: 1,
+      maxProgress: 1,
+      unlocked: true,
+      color: "from-yellow-400 to-orange-500",
+      glowColor: "shadow-yellow-500/25"
     },
-    { 
-      id: 2, 
-      name: 'Perfect Score', 
-      description: 'Get 100% on any quiz', 
-      icon: <FiStar className="w-6 h-6 text-blue-400" />, 
-      earned: perfectScores > 0 
+    {
+      id: 2,
+      title: "Quiz Master",
+      description: "Score 100% on 10 quizzes",
+      icon: <Trophy className="w-6 h-6" />,
+      progress: 7,
+      maxProgress: 10,
+      unlocked: false,
+      color: "from-purple-400 to-pink-500",
+      glowColor: "shadow-purple-500/25"
     },
-    { 
-      id: 3, 
-      name: 'Master of All', 
-      description: 'Complete quizzes in 3 different categories', 
-      icon: <FiAward className="w-6 h-6 text-purple-400" />, 
-      earned: uniqueCategories >= 3 
+    {
+      id: 3,
+      title: "Learning Streak",
+      description: "7-day learning streak",
+      icon: <Flame className="w-6 h-6" />,
+      progress: 5,
+      maxProgress: 7,
+      unlocked: false,
+      color: "from-red-400 to-orange-500",
+      glowColor: "shadow-red-500/25"
     },
-    { 
-      id: 4, 
-      name: 'Consistent Performer', 
-      description: 'Maintain above 80% average', 
-      icon: <FiCheckCircle className="w-6 h-6 text-green-400" />, 
-      earned: parseFloat(averageScore) >= 80 
+    {
+      id: 4,
+      title: "Knowledge Seeker",
+      description: "Complete 50 quizzes",
+      icon: <BookOpen className="w-6 h-6" />,
+      progress: 23,
+      maxProgress: 50,
+      unlocked: false,
+      color: "from-blue-400 to-cyan-500",
+      glowColor: "shadow-blue-500/25"
     },
+    {
+      id: 5,
+      title: "Perfect Score",
+      description: "Achieve 100% accuracy",
+      icon: <Star className="w-6 h-6" />,
+      progress: 1,
+      maxProgress: 1,
+      unlocked: true,
+      color: "from-green-400 to-emerald-500",
+      glowColor: "shadow-green-500/25"
+    },
+    {
+      id: 6,
+      title: "Speed Demon",
+      description: "Complete quiz in under 2 minutes",
+      icon: <Rocket className="w-6 h-6" />,
+      progress: 3,
+      maxProgress: 5,
+      unlocked: false,
+      color: "from-indigo-400 to-purple-500",
+      glowColor: "shadow-indigo-500/25"
+    }
   ];
 
+  const skillsProgress: SkillProgress[] = [
+    {
+      category: "JavaScript",
+      level: 3,
+      experience: 750,
+      maxExperience: 1000,
+      color: "from-yellow-400 to-amber-500",
+      icon: <Brain className="w-5 h-5" />
+    },
+    {
+      category: "React",
+      level: 2,
+      experience: 450,
+      maxExperience: 800,
+      color: "from-cyan-400 to-blue-500",
+      icon: <Target className="w-5 h-5" />
+    },
+    {
+      category: "Python",
+      level: 4,
+      experience: 890,
+      maxExperience: 1200,
+      color: "from-green-400 to-emerald-500",
+      icon: <BarChart3 className="w-5 h-5" />
+    },
+    {
+      category: "Data Science",
+      level: 2,
+      experience: 320,
+      maxExperience: 600,
+      color: "from-purple-400 to-pink-500",
+      icon: <PieChart className="w-5 h-5" />
+    }
+  ];
+
+  const recentActivity: RecentActivity[] = [
+    {
+      id: 1,
+      type: 'quiz',
+      title: 'JavaScript Fundamentals',
+      score: 95,
+      timestamp: '2 hours ago',
+      color: 'text-green-400'
+    },
+    {
+      id: 2,
+      type: 'achievement',
+      title: 'Quick Starter Unlocked!',
+      timestamp: '5 hours ago',
+      color: 'text-yellow-400'
+    },
+    {
+      id: 3,
+      type: 'quiz',
+      title: 'React Hooks Mastery',
+      score: 88,
+      timestamp: '1 day ago',
+      color: 'text-blue-400'
+    },
+    {
+      id: 4,
+      type: 'course',
+      title: 'Python for Data Science',
+      timestamp: '2 days ago',
+      color: 'text-purple-400'
+    }
+  ];
+
+  // Animation effect on mount
   useEffect(() => {
-    const fetchQuizResults = async () => {
-      if (!session?.user?.email) return;
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      // Animate stats
+      const targetStats = {
+        totalQuizzes: 23,
+        averageScore: 87,
+        streakDays: 5,
+        totalHours: 12
+      };
       
-      setIsLoading(true);
-      try {
-        const response = await fetch('/api/quiz-results');
-        if (!response.ok) {
-          throw new Error('Failed to fetch quiz results');
+      const duration = 2000;
+      const steps = 60;
+      const interval = duration / steps;
+      
+      let currentStep = 0;
+      const animateStats = setInterval(() => {
+        currentStep++;
+        const progress = currentStep / steps;
+        const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+        
+        setAnimatedStats({
+          totalQuizzes: Math.round(targetStats.totalQuizzes * easeOutQuart),
+          averageScore: Math.round(targetStats.averageScore * easeOutQuart),
+          streakDays: Math.round(targetStats.streakDays * easeOutQuart),
+          totalHours: Math.round(targetStats.totalHours * easeOutQuart)
+        });
+        
+        if (currentStep >= steps) {
+          clearInterval(animateStats);
         }
-        const data = await response.json();
-        setQuizData(data);
-      } catch (err) {
-        console.error('Error fetching quiz results:', err);
-        setError('Failed to load quiz results');
-      } finally {
-        setIsLoading(false);
+      }, interval);
+      
+      return () => clearInterval(animateStats);
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
       }
-    };
+    }
+  };
 
-    fetchQuizResults();
-  }, [session]);
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring" as const,
+        stiffness: 100,
+        damping: 12
+      }
+    }
+  };
 
-  // Transform data for charts
-  const chartData: ChartData[] = quizData.map(quiz => ({
-    id: quiz.id,
-    name: quiz.quiz.title,
-    score: quiz.score,
-    total: quiz.total,
-    date: formatDate(quiz.completedAt),
-    percentage: quiz.percentage,
-    category: quiz.quiz.category,
-  }));
-
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
-
-  const totalPossibleScore = quizData.reduce((sum, quiz) => sum + quiz.total, 0);
-  const totalEarnedScore = quizData.reduce((sum, quiz) => sum + quiz.score, 0);
-  
-  // Prepare data for pie chart
-  const pieChartData = [
-    { name: 'Correct', value: totalEarnedScore },
-    { name: 'Incorrect', value: totalPossibleScore - totalEarnedScore },
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: <BarChart3 className="w-4 h-4" /> },
+    { id: 'achievements', label: 'Achievements', icon: <Trophy className="w-4 h-4" /> },
+    { id: 'skills', label: 'Skills', icon: <Brain className="w-4 h-4" /> }
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-slate-800 mb-8">Your Learning Progress</h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-            <h3 className="text-slate-500 text-sm font-medium">Total Quizzes</h3>
-            <p className="text-3xl font-bold text-blue-600">{totalQuizzes}</p>
-          </div>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-            <h3 className="text-slate-500 text-sm font-medium">Average Score</h3>
-            <p className="text-3xl font-bold text-green-600">{averageScore}%</p>
-          </div>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-            <h3 className="text-slate-500 text-sm font-medium">Perfect Scores</h3>
-            <p className="text-3xl font-bold text-purple-600">{perfectScores}</p>
-          </div>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-            <h3 className="text-slate-500 text-sm font-medium">Categories Mastered</h3>
-            <p className="text-3xl font-bold text-purple-600">{uniqueCategories}</p>
-          </div>
-        </div>
+        {/* Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-12"
+        >
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
+            Your Learning Journey
+          </h1>
+          <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+            Track your progress, unlock achievements, and master new skills
+          </p>
+        </motion.div>
+
+        {/* Stats Cards */}
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
+        >
+          {[
+            {
+              icon: <Target className="w-6 h-6" />,
+              label: "Total Quizzes",
+              value: animatedStats.totalQuizzes,
+              color: "from-blue-500 to-cyan-500",
+              bgColor: "from-blue-500/10 to-cyan-500/10"
+            },
+            {
+              icon: <TrendingUp className="w-6 h-6" />,
+              label: "Average Score",
+              value: `${animatedStats.averageScore}%`,
+              color: "from-green-500 to-emerald-500",
+              bgColor: "from-green-500/10 to-emerald-500/10"
+            },
+            {
+              icon: <Flame className="w-6 h-6" />,
+              label: "Learning Streak",
+              value: `${animatedStats.streakDays} days`,
+              color: "from-orange-500 to-red-500",
+              bgColor: "from-orange-500/10 to-red-500/10"
+            },
+            {
+              icon: <Clock className="w-6 h-6" />,
+              label: "Learning Hours",
+              value: `${animatedStats.totalHours}h`,
+              color: "from-purple-500 to-pink-500",
+              bgColor: "from-purple-500/10 to-pink-500/10"
+            }
+          ].map((stat, index) => (
+            <motion.div
+              key={index}
+              variants={itemVariants}
+              whileHover={{ scale: 1.05, y: -5 }}
+              className={`relative group bg-gradient-to-br ${stat.bgColor} rounded-2xl p-6 border border-slate-700/50 hover:border-slate-600 transition-all duration-300`}
+            >
+              <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity duration-300`}></div>
+              <div className="relative">
+                <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.color} w-fit mb-4 shadow-lg`}>
+                  <div className="text-white">{stat.icon}</div>
+                </div>
+                <h3 className="text-slate-400 text-sm font-medium mb-2">{stat.label}</h3>
+                <p className="text-3xl font-bold text-white">{stat.value}</p>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
 
         {/* Tabs */}
-        <div className="flex border-b border-slate-200 mb-8">
-          <button
-            onClick={() => setActiveTab('overview')}
-            className={`px-6 py-3 font-medium ${activeTab === 'overview' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-500'}`}
-          >
-            Overview
-          </button>
-          <button
-            onClick={() => setActiveTab('achievements')}
-            className={`px-6 py-3 font-medium ${activeTab === 'achievements' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-500'}`}
-          >
-            Achievements
-          </button>
-        </div>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="flex justify-center mb-12"
+        >
+          <div className="inline-flex bg-slate-800/50 backdrop-blur-sm rounded-2xl p-2 border border-slate-700/50">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setSelectedTab(tab.id as any)}
+                className={`px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 ${
+                  selectedTab === tab.id
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/25'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </motion.div>
 
         {/* Tab Content */}
-        {activeTab === 'overview' && (
-          <div className="space-y-8">
-            {/* Quiz Performance Chart */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-              <h2 className="text-xl font-semibold text-slate-800 mb-6">Quiz Performance</h2>
-              <div className="h-80">
-                {isLoading ? (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-                  </div>
-                ) : error ? (
-                  <div className="flex items-center justify-center h-full text-red-500">
-                    {error}
-                  </div>
-                ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="percentage" name="Score %" fill="#3b82f6" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                )}
-              </div>
-            </div>
-
-            {/* Score Distribution */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h2 className="text-xl font-semibold text-slate-800 mb-6">Score Distribution</h2>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={pieChartData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={(({ name, value }: { name?: string | number; value?: string | number }) => {
-                          const displayName = name?.toString() || 'Unknown';
-                          const displayValue = Number(value) || 0;
-                          const percentage = totalPossibleScore > 0 ? Math.round((displayValue / totalPossibleScore) * 100) : 0;
-                          return `${displayName}: ${percentage}%`;
-                        }) as any}
-                      >
-                        {pieChartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
+        <AnimatePresence mode="wait">
+          {selectedTab === 'overview' && (
+            <motion.div
+              key="overview"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-8"
+            >
+              {/* Progress Chart */}
+              <motion.div
+                variants={itemVariants}
+                className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl p-8 border border-slate-700/50"
+              >
+                <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                  <BarChart3 className="w-6 h-6 text-blue-400" />
+                  Weekly Progress
+                </h2>
+                <div className="grid grid-cols-7 gap-4">
+                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => (
+                    <div key={day} className="text-center">
+                      <p className="text-slate-400 text-sm mb-3">{day}</p>
+                      <motion.div
+                        initial={{ height: 0 }}
+                        animate={{ height: `${Math.random() * 80 + 20}%` }}
+                        transition={{ delay: index * 0.1, duration: 0.5 }}
+                        className="bg-gradient-to-t from-blue-500 to-purple-500 rounded-t-lg"
+                      ></motion.div>
+                    </div>
+                  ))}
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h2 className="text-xl font-semibold text-slate-800 mb-6">Recent Quizzes</h2>
+              {/* Recent Activity */}
+              <motion.div
+                variants={itemVariants}
+                className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl p-8 border border-slate-700/50"
+              >
+                <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                  <Clock className="w-6 h-6 text-purple-400" />
+                  Recent Activity
+                </h2>
                 <div className="space-y-4">
-                  {isLoading ? (
-                    <div className="flex justify-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-                    </div>
-                  ) : error ? (
-                    <p className="text-red-500">{error}</p>
-                  ) : quizData.length === 0 ? (
-                    <p className="text-slate-500">No quiz results found</p>
-                  ) : (
-                    <div className="space-y-4">
-                      {quizData.slice(0, 5).map((quiz) => (
-                        <div key={quiz.id} className="border-b border-slate-100 pb-4">
-                          <div className="flex justify-between items-center">
-                            <h3 className="font-medium text-slate-800">{quiz.quiz.title}</h3>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              quiz.percentage >= 80 ? 'bg-green-100 text-green-800' : 
-                              quiz.percentage >= 50 ? 'bg-yellow-100 text-yellow-800' : 
-                              'bg-red-100 text-red-800'
-                            }`}>
-                              {quiz.percentage}%
-                            </span>
-                          </div>
-                          <p className="text-sm text-slate-500">{quiz.quiz.category} • {formatDate(quiz.completedAt)}</p>
+                  {recentActivity.map((activity, index) => (
+                    <motion.div
+                      key={activity.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="flex items-center justify-between p-4 bg-slate-800/50 rounded-xl border border-slate-700/30 hover:border-slate-600/50 transition-all duration-300"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`p-2 rounded-lg bg-slate-700/50 ${activity.color}`}>
+                          {activity.type === 'quiz' && <Target className="w-5 h-5" />}
+                          {activity.type === 'achievement' && <Trophy className="w-5 h-5" />}
+                          {activity.type === 'course' && <BookOpen className="w-5 h-5" />}
                         </div>
-                      ))}
-                    </div>
-                  )}
+                        <div>
+                          <h3 className="font-semibold text-white">{activity.title}</h3>
+                          <p className="text-slate-400 text-sm">{activity.timestamp}</p>
+                        </div>
+                      </div>
+                      {activity.score && (
+                        <div className={`px-3 py-1 rounded-lg bg-green-500/20 text-green-400 font-semibold`}>
+                          {activity.score}%
+                        </div>
+                      )}
+                    </motion.div>
+                  ))}
                 </div>
-              </div>
-            </div>
-          </div>
-        )}
+              </motion.div>
+            </motion.div>
+          )}
 
-        {activeTab === 'achievements' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {badges.map((badge) => (
-                <div
-                  key={badge.id}
-                  className={`p-6 rounded-xl border-2 ${
-                    badge.earned
-                      ? 'bg-white border-blue-100 shadow-sm'
-                      : 'bg-slate-50 border-slate-100'
-                  }`}
+          {selectedTab === 'achievements' && (
+            <motion.div
+              key="achievements"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
+              {achievements.map((achievement, index) => (
+                <motion.div
+                  key={achievement.id}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  className={`relative group ${
+                    achievement.unlocked 
+                      ? 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-600/50' 
+                      : 'bg-slate-800/30 border-slate-700/30'
+                  } rounded-2xl p-6 border transition-all duration-300`}
                 >
-                  <div className="flex items-center space-x-4">
-                    <div className={`p-3 rounded-full ${
-                      badge.earned ? 'bg-blue-50' : 'bg-slate-100'
+                  {achievement.unlocked && (
+                    <div className={`absolute inset-0 bg-gradient-to-br ${achievement.color} opacity-5 rounded-2xl`}></div>
+                  )}
+                  
+                  <div className="relative">
+                    <div className={`p-4 rounded-2xl bg-gradient-to-br ${achievement.color} w-fit mb-4 ${
+                      achievement.unlocked ? 'shadow-lg shadow-blue-500/25' : 'opacity-50'
                     }`}>
-                      {badge.icon}
+                      <div className="text-white">{achievement.icon}</div>
                     </div>
-                    <div>
-                      <h3 className={`font-medium ${
-                        badge.earned ? 'text-slate-800' : 'text-slate-400'
+                    
+                    <div className="mb-4">
+                      <h3 className={`text-lg font-bold mb-2 ${
+                        achievement.unlocked ? 'text-white' : 'text-slate-400'
                       }`}>
-                        {badge.name}
+                        {achievement.title}
                       </h3>
-                      <p className="text-sm text-slate-500">{badge.description}</p>
+                      <p className="text-slate-400 text-sm">{achievement.description}</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-400">Progress</span>
+                        <span className={achievement.unlocked ? 'text-green-400' : 'text-slate-400'}>
+                          {achievement.progress}/{achievement.maxProgress}
+                        </span>
+                      </div>
+                      <div className="w-full bg-slate-700/50 rounded-full h-2">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${(achievement.progress / achievement.maxProgress) * 100}%` }}
+                          transition={{ delay: index * 0.1 + 0.5, duration: 0.8 }}
+                          className={`bg-gradient-to-r ${achievement.color} h-2 rounded-full`}
+                        ></motion.div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4">
+                      <span className={`px-3 py-1 rounded-lg text-xs font-semibold ${
+                        achievement.unlocked
+                          ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                          : 'bg-slate-700/50 text-slate-400 border border-slate-600/30'
+                      }`}>
+                        {achievement.unlocked ? '🏆 Unlocked' : '🔒 Locked'}
+                      </span>
                     </div>
                   </div>
-                  <div className="mt-4 pt-3 border-t border-slate-100">
-                    <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${
-                      badge.earned
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-slate-100 text-slate-400'
-                    }`}>
-                      {badge.earned ? 'Earned' : 'Locked'}
-                    </span>
-                  </div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
+          )}
 
-            {perfectScores > 0 && (
-              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <FiAward className="h-5 w-5 text-yellow-400" />
+          {selectedTab === 'skills' && (
+            <motion.div
+              key="skills"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              {skillsProgress.map((skill, index) => (
+                <motion.div
+                  key={skill.category}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 border border-slate-700/50"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg bg-gradient-to-br ${skill.color}`}>
+                        <div className="text-white">{skill.icon}</div>
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">{skill.category}</h3>
+                        <p className="text-slate-400 text-sm">Level {skill.level}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-white">{skill.experience}</p>
+                      <p className="text-slate-400 text-sm">/ {skill.maxExperience} XP</p>
+                    </div>
                   </div>
-                  <div className="ml-3">
-                    <h3 className="text-lg font-semibold text-yellow-800">Perfect Score Champion!</h3>
-                    <p className="text-yellow-700">
-                      You&apos;ve achieved a perfect score in {perfectScores} {perfectScores === 1 ? 'quiz' : 'quizzes'}! Keep up the great work!
-                    </p>
+                  
+                  <div className="space-y-2">
+                    <div className="w-full bg-slate-700/50 rounded-full h-3">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(skill.experience / skill.maxExperience) * 100}%` }}
+                        transition={{ delay: index * 0.1 + 0.5, duration: 1 }}
+                        className={`bg-gradient-to-r ${skill.color} h-3 rounded-full`}
+                      ></motion.div>
+                    </div>
+                    <div className="flex justify-between text-xs text-slate-400">
+                      <span>{Math.round((skill.experience / skill.maxExperience) * 100)}% to Level {skill.level + 1}</span>
+                      <span>{skill.maxExperience - skill.experience} XP remaining</span>
+                    </div>
                   </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
-}
+};
+
+export default ProgressPage;
